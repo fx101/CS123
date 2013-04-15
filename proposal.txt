@@ -1,0 +1,54 @@
+Title: Project Proposal:
+Name: Alfredo Luque
+Repository Location: https://github.com/fx101/CS123.git
+
+Datasets:
+    Bureau of Transportation Statistics / Research and Innovative Technology Administration:
+        Airline On-Time Performance data
+        Proposed Data Range: 1990-Present
+        Link: http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time
+        Approximate Size: ~12GB (several hundred million records)
+        Overview:
+            Contains delays, causes of delays, airlines, airports, delays by type (weather, security, etc.), and cancellation data for most commercial U.S.
+            flights since 1987. 
+    NOAA (National Oceanographic and Atmospheric Administration)/ NCDC (National Climate Data Center)
+        Global Summary Of the Day (GSOD) Weather Data
+        Link: http://www7.ncdc.noaa.gov/CDO/cdoselect.cmd?datasetabbv=GSOD&countryabbv=&georegionabbv=
+        Approximate Size (> 80GB)
+        Proposed Data Range: 1990-Present
+    Alternatively:
+    NOAA / NCDC Hourly Weather Data
+        Approximate Size (Unknown... > 1TB)
+    http://cdo.ncdc.noaa.gov/qclcd/QCLCD?prior=N
+
+Proposal:
+    Goal: Develop a model to predict the likelihood that a flight will be delayed.
+    
+    I will use data from the BTS that lists whether a flight was delayed, by how long it was delayed (by each type of delay: security, weather, etc.), time spent on tarmac, and whether the flight was cancelled/rerouted.
+    
+    I will link this data to weather data from NOAA which contains daily weather observations for weather stations around the U.S. Since most airports that handle commercial flights have their own weather station, it is easy to link weather data to a particular flight given the time and the airport identifier. For instance, Chicago Midway Airport has the ICAO code KMDW and the weather station is called KMDW. We can then lookup the weather for the day of the flight, or if using hourly data, the weather at the time of the flight. Weather will include temperature, wind speed, visibility, and sky observation.
+    
+    One additional variable I will consider is 'traffic' through each airport. This can either be computed directly from the BTS On Time Arrival data (simply count up the number of departing flights and arriving flights for each airport code for each day) or this data can be retrieved from an FAA database (in ATC/Air Traffic Controller speak these are called 'operations').
+    
+Execution:
+    1) Get rid of airports for which there is no corresponding weather station
+    2) Create a database that contains flights. This allows me to better manage the data and have each node request what it needs. I will only keep relevant columns.
+    3) Add weather data for the flights in the database.
+    4) Run multiple regressions by airport over an interval of time using number of ATC operations, weather, size of airport (small/medium/large... computed from FAA ATC operations data). Given that reasons for delays are presumably independent, we can go with a linear model with basis functions to be determined based on smaller scale analyses of the relevant variables. Use these preliminary regressions to determine the general structure of the regression (aka which basis functions to use (I'm assuming a simple multiple linear regression won't do))
+    5) Write a sequential/on-line model using the result of these regressions. I'll probably go with a gradient-descent with some sort of regularization to prevent overfitting. 
+    6) Test out the resulting model to see its accuracy.
+    
+Expected results:
+    A model with more predictive power among flights with delays that can produce the likelihood of a delay. Given the relatively small number of airports compared to flights, I could have pre-computed parameters for given airports so that I can simply enter the airport designator, the weather (or expected weather), and the date/time of the flight and receive a likelihood of delay. 
+
+Expected problems:
+In dealing with days, not only will there be seasonal trends but also holidays.
+It might be harder to form a comprehensive model of delays (for all airports) that can be computed in parallel without shared memory. Instead, I might want to compute one regression per airport. The resulting models can be stored into a database so that entering inputs will look up the model specification 'on-the-fly'. If not, imperfect combinations of regression parameters can be used (weighted averaging, etc.) to avoid the shared memory issue/having to update shared parameters. 
+
+Assumptions:
+Destination weather/airports won't impact departure delays. This might not be the case in shorter flights (where rerouting isn't an option).
+In-route weather won't impact departure delays. Again, in shorter flights you can't reroute.
+
+Tools: 
+Python
+MySQL (chunks of data to process will be queried during the map process)
