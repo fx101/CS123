@@ -20,3 +20,5 @@
 	The data is very disparrate and in a bunch of different formats (ranging from HTML only tables to excel to csv) with inconsistent naming schemes. Ultimately, I decided that throwing everything into a MariaDB database and querying out cleaned up data was the best way to go (the database does the job). I'm going to try and write some scripts to automate the process.
 
 	I also realized that although it would be fun to use all the data ranging back to 1985, the model's predictive ability drops astronomically when I add anything before 2005 or so. Admittedly this makes sense... technological changes have improved delays with respect to total air operations. Especially improved ILS (instrument landing systems) that allow air operations to continue in terrible visibility.
+	
+	Since the network trains decently with smaller subsets (1k-5k samples), I realized that assuming I can use hourly weather data, the key to optaining accuracy with decent performance will be to speed up training as much as possible. Effectively, this then becomes a processor-intensive and not data-intensive problem.
