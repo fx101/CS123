@@ -51,7 +51,7 @@ Run It:
 		python proto.py
 	You can specify a training set and a testing set. As stated, the 1k file is fast enough to play around with for a training set. 50, 100, or even 100k work fine as a testing set.
 
-	At around 10,000 iterations (properly configured) you'll start to hit convergence.
+	At around 10,000 iterations (properly configured) you'll start to hit convergence. Note that increasing the number of neurons doesn't help much since the daily nature of the weather data is the real accuracy constraint.
 	My best result (running the C accelerated version of PyBrain) was an average error of 4 minutes on the testing data (with 11,000 iterations)
 
 Testing the network on particular input values is easy.
