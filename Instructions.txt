@@ -1,0 +1,59 @@
+I've designed the prototype as a proof of concept that's very easy to install and play around with.
+
+Core Dependencies:
+	-SciPy
+	-NumPy
+	-MatPlotLib
+	****These Should Already Be on the CS Machines ****
+
+The program is intended to be run on Python 2.x. The Python 2To3 refactoring tool should work, however, if you have that inclination.
+
+Additional Dependencies:
+	-PyBrain
+
+Installing PyBrain:
+	1. Just clone the repo it's hosted on:
+			git clone git://github.com/pybrain/pybrain.git
+	2. Navigate into the repo directory
+			cd <pathtopybrainrepo>
+	3. Locate setup.py and...
+		python setup.py install
+	This worked fine for me. It'll give you a fairly obvious error message if there are dependencies are missing. Usually, techstaff can push these within 24 hours.
+	4. Check that it's working...
+		For 2.x
+			python
+			...
+			...
+			> import pybrain
+		For 3.x
+			python3
+			...
+			...
+			> import pybrain
+
+Download the data files:
+	I've included a few different 'size' data files for you to play around with. They all correspond to O'Hare International Airport. Upon request I can provide any other commercial U.S. airport (and will include hundreds in the final version). ORD_100.csv has 100 records, ORD_1K.csv has 1000, and so on. In my opinion, training with the "1k" is decent if you just want to play around. The optimal training set size seems to be around 4k but as you'll read in Prototype.txt I'm only using daily weather data at the moment. With hourly data, and 4K training set size the accuracy will be mindblowing. Basically, these data files contain weather and the total number of ATC operations for the day corresponding to each flight leaving from O'Hare. The data I've included is a small subset.
+
+	I've hosted these files on S3. So...
+		wget http://s3.amazonaws.com/ProtoData/ORD_100K.csv
+		wget http://s3.amazonaws.com/ProtoData/ORD_1K.csv
+		wget http://s3.amazonaws.com/ProtoData/ORD_50.csv
+		wget http://s3.amazonaws.com/ProtoData/ORD_100.csv
+
+	You can stick these in the folder of your choosing. The program lets you specify their full path.
+
+Grab the program:
+	git clone git://github.com/fx101/CS123.git
+
+Run It:
+	Simply:
+		python proto.py
+	You can specify a training set and a testing set. As stated, the 1k file is fast enough to play around with for a training set. 50, 100, or even 100k work fine as a testing set.
+
+	At around 10,000 iterations (properly configured) you'll start to hit convergence.
+	My best result (running the C accelerated version of PyBrain) was an average error of 4 minutes on the testing data (with 11,000 iterations)
+
+Testing the network on particular input values is easy.
+create a tuple of inputs as seen in the source code. Then write:
+print n.activate(<inputs>) 
+
