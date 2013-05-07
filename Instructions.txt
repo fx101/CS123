@@ -35,6 +35,7 @@ Download the data files:
 	I've included a few different 'size' data files for you to play around with. They all correspond to O'Hare International Airport. Upon request I can provide any other commercial U.S. airport (and will include hundreds in the final version). ORD_100.csv has 100 records, ORD_1K.csv has 1000, and so on. In my opinion, training with the "1k" is decent if you just want to play around. The optimal training set size seems to be around 4k but as you'll read in Prototype.txt I'm only using daily weather data at the moment. With hourly data, and 4K training set size the accuracy will be mindblowing. Basically, these data files contain weather and the total number of ATC operations for the day corresponding to each flight leaving from O'Hare. The data I've included is a small subset.
 
 	I've hosted these files on S3. So...
+		cd <pathtowhereyouwantthedata>
 		wget http://s3.amazonaws.com/ProtoData/ORD_100K.csv
 		wget http://s3.amazonaws.com/ProtoData/ORD_1K.csv
 		wget http://s3.amazonaws.com/ProtoData/ORD_50.csv
