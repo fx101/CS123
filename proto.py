@@ -7,7 +7,9 @@ from pybrain.supervised.trainers import BackpropTrainer
 import sys
 from math import fabs
 
-#Scaling factors For Data
+print " Neural Network for Airline Delay Calculations \n"
+
+#Scaling factors For Data. We wants inputs to more or less be in [-1,1] to speed up training.
 d = 4000 #Distance
 op = 2700 #Operations/day
 vis = 10 #Visibility
@@ -17,14 +19,14 @@ ws = 44 #Wind Speed
 dl = 100 #Delays
 
 trainingSet = SupervisedDataSet(6,1)
-pathToTrainingFile = raw_input("Please Enter The Path To The Training Data:  \n")
+pathToTrainingFile = raw_input("Please Enter The Full Path To The Training Data:  \n")
 try:
 	trainingFile = open(pathToTrainingFile)
 except IOError:
 	print "You fool! Training File Not Found. Try typing the path in correctly next time."
 	sys.exit()
 testYN = raw_input("Do You Wish To Test The Final Network? [Y/N] \n")
-pathToTestFile = raw_input("Please Enter The Path To The Test File: \n")
+pathToTestFile = raw_input("Please Enter The Full Path To The Test File: \n")
 try:
 	testFile = open(pathToTestFile)
 except IOError:
@@ -43,13 +45,14 @@ for line in trainingFile.readlines():
 	delay = data[6]/dl
 	trainingSet.addSample(inputs,delay)
 
-n = FeedForwardNetwork()
+print "Training Set Successfully Loaded \n \n"
 
 #Build Network
+n = FeedForwardNetwork()
 hiddenN = int(input("Enter Number of Hidden Neurons. Recommended: 6 \n"))
 print "Building Network"
 inLayer = LinearLayer(6)
-hiddenLayer = SigmoidLayer(hiddenN)
+hiddenLayer = SigmoidLayer(hiddenN) #If we want, we can add another hidden layer. Without hourly weather data, it's not worth it.
 outLayer = LinearLayer(1)
 
 n.addInputModule(inLayer)
@@ -74,7 +77,7 @@ trainer.testOnData(verbose=True)
 if(testYN) == "N":
 	sys.exit()
 
-print("\n \n \n Testing Network...")
+print("\n \n \n Testing Network on Test Dataset...")
 errors = 0
 testCounts = 0
 for line in testFile.readlines():
