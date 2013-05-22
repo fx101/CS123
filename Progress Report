@@ -1,0 +1,28 @@
+Progress Report:
+
+Since the for prototype submission, the majority of my work has been related to improving the quality of the inputs to my neural network. After testing the network with hourly-accuracy weather data I realized that even the python network works quickly enough to yield good results. Hence, I focused my efforts on developing an easy way to manage the data and deploy it for training.
+
+Ultimately, this meant overcoming a few hurdles. 
+
+I. 
+To best understand the first hurdle, consider the table schemas in my repository (db_overview.sql). OnTime contains delay, distance, and flight information for each flight departing from a given airport in the U.S. For the final project, I will limit calculating models to 15-30 major airports in the U.S. since generating these models for the entire U.S. would be prohibitively costly even with a large number of nodes. Moreover, smaller airports do not necessarily file daily air operations totals with the FAA. AirportOperations contains these numbers for a given airport over the period of two years (more than enough for training the network). The common link between these tables is the date. 
+
+Linking weather for each flight is far more difficult. For each airport, 24 daily weather samples (roughly one per hour) exist for the past two years. However, the period of measurement is not constant and does not directly correspond to the flight times. Interpolation would seem like the ideal solution; however, missing observations and varying sampling periods would make this difficult to do. Ultimately, I decided to join weather data first on airport, then on date, then on the hour part. Missing observations would simply be excluded.
+
+The result is a python script that will take a list of airport identifier codes (which exist in the database) as input and will produce training and test files datasets with hourly weather data. This makes it trivial to then launch a series of nodes, send them training data, and train them programatically (this is *not* finished since the database needs to be finalized before I write the queries using SQLAlchemy).
+
+II.
+The largest hurdle was finding a way to process 'sky conditions' in the weather reports. Consider an example row from the weather data:
+APT DATE        TIME        CONDITION       VIS     WETB    DEW     HUM WIND  PRESS
+ORD	2012-09-01	00:06:51	SCT034 OVC140	10.00	19.20	17.20	71	14	29.3500
+
+Here, the sky conditions indicate scattered clouds (SCT) at 3,400 feet (034) and overcast (OVC) clouds at 14,000 feet. This is meaningless to a neural network that knows nothing of the subtleties of weather and FAA regulations for landing. In practice, clouds at or near 1,000 feet will cause major delays because airliners cannot rely on a visual approach and hence need to use special runways that support instrument landing systems (ILS). Hence, I opted to generate a variable that corresponds to this (see metarparse.py).
+
+ One solution would be to use REGEXP to synthesize a new 'metaskycondition' variable that produces values between 0 (clear or very high clouds) and 1 (heavy, low cover). Doing this in-database is complicated and prevents being able to easily add brand-new data. Instead, this functionality is an additional module for the training set generator. Training the network on a binary (delay/no-delay) training set produced extremely high accuracy and converged very quickly. This suggests that using intervals for delay prediction may improve the convergence speed enough that a CUDA implementation would be overkill. I am finalizing the input data transformations late this week before writing the neuralnet in C++.
+
+The final setup on EC2 will be the following:
+Node     |   Description
+------------------------
+0        |   Database server. Generates training datasets on demand. Also stores finished weights.
+1 - n    |   NeuralNet training node. Trains network on training dataset for 'm' airports each. Training data pulled from S3 to EBS.
+
