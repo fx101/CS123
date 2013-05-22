@@ -1,5 +1,15 @@
 Progress Report:
 
+Summary:
+-Added METAR support (sky observations are now parsed according to their effect on flight operations per FAA flight regulations)
+
+-Extensive testing revealed that tiered delay is best (delay/no delay OR <5 min, <30 min, >10 min) and is plenty fast even with PyBrain.
+
+-Discovered how to quickly attach hourly weather data on the fly (JOIN operation using MySQL HOUR() command to join on hours)
+
+-Streamlined database. Baked EC2 AMI that will handle the database and produce training sets for training networks. Script to do this not yet finished (but simple series of SQLAlchemy requests). 
+
+
 Since the for prototype submission, the majority of my work has been related to improving the quality of the inputs to my neural network. After testing the network with hourly-accuracy weather data I realized that even the python network works quickly enough to yield good results. Hence, I focused my efforts on developing an easy way to manage the data and deploy it for training.
 
 Ultimately, this meant overcoming a few hurdles. 
@@ -9,7 +19,7 @@ To best understand the first hurdle, consider the table schemas in my repository
 
 Linking weather for each flight is far more difficult. For each airport, 24 daily weather samples (roughly one per hour) exist for the past two years. However, the period of measurement is not constant and does not directly correspond to the flight times. Interpolation would seem like the ideal solution; however, missing observations and varying sampling periods would make this difficult to do. Ultimately, I decided to join weather data first on airport, then on date, then on the hour part. Missing observations would simply be excluded.
 
-The result is a python script that will take a list of airport identifier codes (which exist in the database) as input and will produce training and test files datasets with hourly weather data. This makes it trivial to then launch a series of nodes, send them training data, and train them programatically (this is *not* finished since the database needs to be finalized before I write the queries using SQLAlchemy).
+The result is a python script that will take a list of airport identifier codes (which exist in the database) as input and will produce training and test files datasets with hourly weather data. This makes it trivial to then launch a series of nodes, send them training data, and train them programatically (this is *not* finished since the database needs to be finalized before I write the queries using SQLAlchemy). 
 
 II.
 The largest hurdle was finding a way to process 'sky conditions' in the weather reports. Consider an example row from the weather data:
