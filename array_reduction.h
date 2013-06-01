@@ -23,7 +23,8 @@ __global__ void reduce(float *g_idata, float *g_odata, unsigned int n)
 	unsigned int i = blockIdx.x*(blockSize*2) + tid;
 	unsigned int gridSize = blockSize*2*gridDim.x;
 	sdata[tid] = 0;
-	while (i < n){
+	while (i < n)
+	{
 		sdata[tid] += g_idata[i] + g_idata[i+blockSize]; i += gridSize;
 	}
 	__syncthreads();
