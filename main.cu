@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <nn.h>
+#include <array_reduction.h>
 
 using namespace std;
 

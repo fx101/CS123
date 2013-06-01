@@ -40,19 +40,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: NeuralNet secondary-outputs
+all: CS123 secondary-outputs
 
 # Tool invocations
-NeuralNet: $(OBJS) $(USER_OBJS)
+CS123: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: NVCC Linker'
-	nvcc  -link -o  "NeuralNet" $(OBJS) $(USER_OBJS) $(LIBS)
+	/usr/local/cuda-5.5/bin/nvcc --cudart static -link -o  "CS123" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CU_DEPS)$(OBJS)$(C++_DEPS)$(C_DEPS)$(CC_DEPS)$(CPP_DEPS)$(EXECUTABLES)$(CXX_DEPS)$(C_UPPER_DEPS) NeuralNet
+	-$(RM) $(CU_DEPS)$(OBJS)$(C++_DEPS)$(C_DEPS)$(CC_DEPS)$(CPP_DEPS)$(EXECUTABLES)$(CXX_DEPS)$(C_UPPER_DEPS) CS123
 	-@echo ' '
 
 secondary-outputs: $(CUBINS)
