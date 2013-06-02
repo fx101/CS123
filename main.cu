@@ -22,18 +22,37 @@ float* initW(unsigned int nW)
 	return weights;
 }
 
+void sumErrors(unsigned int numBlocks)
+{
+	//sum errors to blockdim numbers
+	sumreduce<<redBlocks,blockSize>>(dev_errIn,dev_PartSum); //reduces into redBlocks floats
+	sumreduce<<1,redBlocks>>(dev_PartSum,dev_error); //reduces to final sum
+}
 
 
 int main(void)
 {
+	//load training data
+
+	//Finalize block dimensions
+	unsigned int redBlocks = N/blockSize;
 	//Initialize Weights
 	unsigned int nW = (unsigned int)(pow(IN,2.0)*2.0); //max dim for square weight matrix
 	float* wSeeds;
 	wSeeds = initW(nW);
-	float* dev_wSeeds;
-	cudaMalloc((void**)&dev_wSeeds,(sizeof(float)*nW));
-	cudaMemcpy(wSeeds , dev_wSeeds , sizeof(float)*nW , cudaMemcpyDeviceToHost);
+	float* dev_w;
+	cudaMalloc((void**)&dev_w,(sizeof(float)*nW));
+	cudaMemcpy(wSeeds , dev_w , sizeof(float)*nW , cudaMemcpyDeviceToHost);
 
-	//load data
+	//Generate Device Error Array
+	float* dev_errIn;
+	float* dev_errPartSum;
+	float* dev_error;
+	cudaMalloc((void**)&dev_errIn,(sizeof(float)*N));
+	cudaMalloc((void**)&dev_errPartSum,(sizeof(float)*N));
+	cudaMalloc((void**)&dev_error,sizeof(float));
+	//propagate network
+	actNodeCol<<N,HN>>(dev_tdi, dev_tdo, dev_w , dev_errIn);
+	sumErrors(redBlocks);
 	return 0;
 }

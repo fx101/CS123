@@ -68,7 +68,7 @@ __global__ void actNodeCol(float* ins, float* outs, float* weights, float* error
 		//Calculate Squared Error (Assumes errors initialized to 0)
 		for(int i = 0; i < ON ; i++)
 		{
-			errors[blockIdx.x] += __powf(outs[i]-activations[3*IN + i] , 2.0);
+			errors[blockIdx.x] += __powf((outs[i]-activations[3*IN + i]) , 2.0);
 		}
 	}
 }

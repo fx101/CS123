@@ -9,10 +9,13 @@
 #define NN_H_
 
 //Macros are used for compatibility with CUDA API
+
+//Network topology must be decreasing!
 #define IN 8 //# of input neurons
 #define HN 4 //# of hidden neurons
 #define ON 1 //# of output neurons
 #define LAYERS 3 //# of layers in the network
+#define N 16384 //# of samples (Make it a power of 2)
 
 __device__ float sigmoid(float *x);
 
