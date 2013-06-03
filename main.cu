@@ -22,7 +22,7 @@ float* initW(unsigned int nW)
 	return weights;
 }
 
-void sumErrors(unsigned int numBlocks)
+void sumArray(unsigned int numBlocks)
 {
 	//sum errors to blockdim numbers
 	sumreduce<<redBlocks,blockSize>>(dev_errIn,dev_PartSum); //reduces into redBlocks floats
@@ -37,7 +37,7 @@ int main(void)
 	//Finalize block dimensions
 	unsigned int redBlocks = N/blockSize;
 	//Initialize Weights
-	unsigned int nW = (unsigned int)(pow(IN,2.0)*2.0); //max dim for square weight matrix
+	unsigned int nW = (unsigned int)(IN*HN*(LAYERS-1));
 	float* wSeeds;
 	wSeeds = initW(nW);
 	float* dev_w;
@@ -53,6 +53,6 @@ int main(void)
 	cudaMalloc((void**)&dev_error,sizeof(float));
 	//propagate network
 	actNodeCol<<N,HN>>(dev_tdi, dev_tdo, dev_w , dev_errIn);
-	sumErrors(redBlocks);
+
 	return 0;
 }

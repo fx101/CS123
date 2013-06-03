@@ -11,6 +11,11 @@ __device__ float sigmoid(float *x)
 	return (1.0/(1.0 + __expf(-*x)));
 }
 
+__device__ float DSigmoid(float *x)
+{
+	return sigmoid(x)*(1-sigmoid(x));
+}
+
 __device__ void initActMat(float * ins , float * actMatrix)
 {
 	for(int i=0 ; i < IN ; i++)
@@ -27,12 +32,17 @@ __device__ void sliceData(float* glob_data , float* dev_data)
 		}
 }
 
-__global__ void actNodeCol(float* ins, float* outs, float* weights, float* errors)
+__global__ void KernBackProp(float* ins, float* outs, float* weights, float* updates)
 {
-	//Setup per-block flattened matrices
+	/*
+	 * Weights are flattened in the following form:
+	 * Weight array is subdivided into (Layers-1) partitions of size IN^2 that correspond to layers
+	 * Each of these partitions is subdivided into HN partitions of size IN
+	 *
+	 */
 	__shared__ float inputs[IN]; //on-chip subsection of inputs
 	__shared__ float activations[IN*LAYERS];
-	__shared__ float dev_weights[IN*IN*(LAYERS-1)];
+	__shared__ float dev_weights[IN*HN*(LAYERS-1)];
 	*dev_weights = *weights; //on-chip copy of weights
 
 	sliceData(ins, inputs);
@@ -61,14 +71,21 @@ __global__ void actNodeCol(float* ins, float* outs, float* weights, float* error
 		float onSum = 0.0;
 		for(int i = 0; i < HN ; i++)
 		{
-			onSum += dev_weights[IN*threadIdx.x + i] * activations[2*IN+i];
+			onSum += dev_weights[HN*IN + IN*threadIdx.x + i] * activations[2*IN+i];
 		}
-		//Store Output from Output Neuron
+		//Output Neuron Activations
 		activations[3*IN + threadIdx.x] = sigmoid(&onSum);
-		//Calculate Squared Error (Assumes errors initialized to 0)
+
+		//Sq Error
 		for(int i = 0; i < ON ; i++)
 		{
 			errors[blockIdx.x] += __powf((outs[i]-activations[3*IN + i]) , 2.0);
 		}
 	}
+
+	//Backpropagate
+
+
+
 }
+
