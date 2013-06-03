@@ -21,10 +21,12 @@ __device__ float sigmoid(float *x);
 
 __device__ float DSigmoid(float *x);
 
+__device__ float logit(float *x);
+
 __device__ void initActMat(float * ins , float * actMatrix);
 
 __device__ void sliceData(float* glob_data , float* dev_data);
 
-__global__ void KernBackProp(float* ins, float* outs, float* weights, float* updates);
+__global__ void kernBackProp(float* ins, float* outs, float* weights, float* updates);
 
 #endif /* NN_H_ */

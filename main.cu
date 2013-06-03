@@ -37,7 +37,7 @@ int main(void)
 	//Finalize block dimensions
 	unsigned int redBlocks = N/blockSize;
 	//Initialize Weights
-	unsigned int nW = (unsigned int)(IN*HN*(LAYERS-1));
+	unsigned int nW = (unsigned int)((IN+1)*HN*(LAYERS-1)); //One bias per hidden and output layer
 	float* wSeeds;
 	wSeeds = initW(nW);
 	float* dev_w;
@@ -52,7 +52,7 @@ int main(void)
 	cudaMalloc((void**)&dev_errPartSum,(sizeof(float)*N));
 	cudaMalloc((void**)&dev_error,sizeof(float));
 	//propagate network
-	actNodeCol<<N,HN>>(dev_tdi, dev_tdo, dev_w , dev_errIn);
+	kernBackProp<<N,HN>>(dev_tdi, dev_tdo, dev_w , dev_errIn);
 
 	return 0;
 }

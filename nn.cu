@@ -16,6 +16,11 @@ __device__ float DSigmoid(float *x)
 	return sigmoid(x)*(1-sigmoid(x));
 }
 
+__device__ float logit(float *x)
+{
+	return __logf(*x) - __logf(1.0-*x);
+}
+
 __device__ void initActMat(float * ins , float * actMatrix)
 {
 	for(int i=0 ; i < IN ; i++)
@@ -32,7 +37,7 @@ __device__ void sliceData(float* glob_data , float* dev_data)
 		}
 }
 
-__global__ void KernBackProp(float* ins, float* outs, float* weights, float* updates)
+__global__ void kernBackProp(float* ins, float* outs, float* weights, float* updates)
 {
 	/*
 	 * Weights are flattened in the following form:
@@ -42,7 +47,9 @@ __global__ void KernBackProp(float* ins, float* outs, float* weights, float* upd
 	 */
 	__shared__ float inputs[IN]; //on-chip subsection of inputs
 	__shared__ float activations[IN*LAYERS];
-	__shared__ float dev_weights[IN*HN*(LAYERS-1)];
+	__shared__ float dev_weights[(IN+1)*HN*(LAYERS-1)];
+	__shared__ float partSums[IN*LAYERS];
+
 	*dev_weights = *weights; //on-chip copy of weights
 
 	sliceData(ins, inputs);
@@ -59,8 +66,10 @@ __global__ void KernBackProp(float* ins, float* outs, float* weights, float* upd
 	float hnSum = 0.0;
 	for(int i = 0; i < IN ; i++)
 	{
-		hnSum += dev_weights[IN*threadIdx.x + i] * activations[IN+i];
+		hnSum += dev_weights[(IN+1)*threadIdx.x + i] * activations[IN+i];
 	}
+	hnSum += dev_weights[(IN+1) * threadIdx.x + IN]; //hidden bias
+
 	//Store Output from Hidden Neuron
 	activations[2*IN + threadIdx.x] = sigmoid(&hnSum);
 
@@ -71,16 +80,18 @@ __global__ void KernBackProp(float* ins, float* outs, float* weights, float* upd
 		float onSum = 0.0;
 		for(int i = 0; i < HN ; i++)
 		{
-			onSum += dev_weights[HN*IN + IN*threadIdx.x + i] * activations[2*IN+i];
+			onSum += dev_weights[HN*(IN+1) + (IN+1)*threadIdx.x + i] * activations[2*IN+i];
 		}
+		onSum += dev_weights[HN*(IN+1) + (IN+1)*threadIdx + IN]; //output bias
 		//Output Neuron Activations
 		activations[3*IN + threadIdx.x] = sigmoid(&onSum);
 
 		//Sq Error
 		for(int i = 0; i < ON ; i++)
 		{
-			errors[blockIdx.x] += __powf((outs[i]-activations[3*IN + i]) , 2.0);
+			errors[blockIdx.x] += (outs[i]-activations[3*IN + i])*(outs[i]-activations[3*IN + i]);
 		}
+		errors[blockIdx.x] *= 0.5;
 	}
 
 	//Backpropagate
