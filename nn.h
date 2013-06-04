@@ -11,6 +11,7 @@
 #define N 16384 //# of samples (Make it a power of 2)
 #define LR 0.3 //Learning Rate
 #define MOM 0.75 //Momentum
+#define EPOCHS 2000 //Number of Epochs to run
 
 __device__ float sigmoid(float *x)
 {
