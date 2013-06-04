@@ -1,6 +1,13 @@
-
-__device__ void
-
+/*
+ * Sums elements of Array
+ * Must be operated in multiple kernel calls:
+ * Generally, 2-step reduction.
+ *
+ * Will only work on compute capability >= 2.0
+ *
+ * Adapted from Nvidia Developer Presentation
+ */
+#include<array_reduction.h>
 __global__ void sumreduce(float *g_idata, float *g_odata, unsigned int n)
 	/*
 	 * g_idata pointer to inputs on global device memory
@@ -75,7 +82,3 @@ __global__ void sumreduce(float *g_idata, float *g_odata, unsigned int n)
 	}
 	return;
 }
-
-
-
-
